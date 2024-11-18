@@ -12,6 +12,7 @@ const io = new Server(server, {
 
 const users = {};  
 const groups = {}; 
+const message = {};
 
 io.on('connection', (socket) => {
     console.log(`User connected: ${socket.id}`);

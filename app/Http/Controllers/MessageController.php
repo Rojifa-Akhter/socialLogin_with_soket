@@ -19,31 +19,31 @@ class MessageController extends Controller
         ]);
 
         $message = Message::create([
-            'sender_id'=>auth()->user()->id,
-            'receiver_id'=>$request->receiver_id,
-            'message'=>$request->message,
-            
+            'sender_id' => auth()->user()->id,
+            'receiver_id' => $request->receiver_id,
+            'message' => $request->message,
+
         ]);
         return response()->json($message);
     }
     public function getMessages(Request $request)
     {
-        $messages = Message::where('receiver_id', auth()->user()->id)
-                           ->orWhere('sender_id', auth()->user()->id)
-                           ->orderBy('created_at', 'desc')
-                           ->get();
+        // Fetch messages where the logged-in user is either the sender or the receiver
+        $messages = Message::where(function ($query) {
+            $query->where('receiver_id', auth()->user()->id)
+                ->orWhere('sender_id', auth()->user()->id);
+        })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Automatically mark messages as read if the user is the receiver and the message is unread
+        $messages->each(function ($message) {
+            if ($message->receiver_id == auth()->user()->id && !$message->is_read) {
+                $message->update(['is_read' => true]);
+            }
+        });
 
         return response()->json($messages);
-    }
-
-    public function markAsRead($messageId)
-    {
-        $message = Message::find($messageId);
-        if ($message && $message->receiver_id == auth()->user()->id) {
-            $message->update(['is_read' => true]);
-        }
-        
-        return response()->json(['message' => 'Message marked as read']);
     }
     //group
     public function createGroup(Request $request)
@@ -79,8 +79,8 @@ class MessageController extends Controller
     public function leaveGroup($groupId)
     {
         GroupMember::where('user_id', auth()->user()->id)
-                   ->where('group_id', $groupId)
-                   ->delete();
+            ->where('group_id', $groupId)
+            ->delete();
 
         return response()->json(['message' => 'Left the group']);
     }
