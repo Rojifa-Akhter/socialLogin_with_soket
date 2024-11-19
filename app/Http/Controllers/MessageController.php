@@ -34,35 +34,45 @@ class MessageController extends Controller
             'sender_id' => auth()->user()->id,
             'receiver_id' => $request->receiver_id,
             'message' => $request->message,
-            'images' => json_encode($imagePaths), 
+            'images' => json_encode($imagePaths),
         ]);
 
-        return response()->json($message);
-    }
+        // Lazy load sender and receiver after creating the message
 
+        $receiver = $message->receiver;
+
+        return response()->json([
+            'message' => $message,
+            'receiver' => $receiver
+        ]);
+    }
+    
     public function getMessages(Request $request)
     {
-        // Fetch messages where the logged-in user is either the sender or the receiver
-        $messages = Message::where(function ($query) {
-            $query->where('receiver_id', auth()->user()->id)
-                ->orWhere('sender_id', auth()->user()->id);
-        })
+        // Eager load the sender and receiver relationships
+        $messages = Message::with(['sender'])
+            ->where(function ($query) {
+                $query->where('receiver_id', auth()->user()->id)
+                    ->orWhere('sender_id', auth()->user()->id);
+            })
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Automatically mark messages as read if the user is the receiver and the message is unread
+        // Automatically mark messages 
         $messages->each(function ($message) {
             if ($message->receiver_id == auth()->user()->id && !$message->is_read) {
                 $message->update(['is_read' => true]);
             }
         });
-        // Decode the image URLs (if any)
+
+        // Decode the image URLs
         $messages->each(function ($message) {
             $message->images = json_decode($message->images);
         });
 
         return response()->json($messages);
     }
+
     //group
     public function createGroup(Request $request)
     {
