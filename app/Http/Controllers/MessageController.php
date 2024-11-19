@@ -88,28 +88,52 @@ class MessageController extends Controller
     public function sendGroupMessage(Request $request, $groupId)
     {
         $request->validate([
-            'message' => 'required|string|max:1000',
+            'content' => 'required|string|max:1000',
         ]);
 
+        // member of the group
+        $isMember = GroupMember::where('group_id', $groupId)
+            ->where('user_id', auth()->user()->id)
+            ->exists();
+
+        if (!$isMember) {
+            return response()->json(['message' => 'You are not a member of this group.'], 403);
+        }
+
+        // Create the group message
         $message = GroupMessage::create([
             'group_id' => $groupId,
             'sender_id' => auth()->user()->id,
-            'message' => $request->message,
-            'read_by' => json_encode([]), // Empty initially
+            'content' => $request->content,
+            'read_by' => json_encode([]),
+            'read_count' => 0,
         ]);
 
         return response()->json($message);
     }
-
-    public function markGroupMessageAsRead($messageId)
+    public function getGroupMessages($groupId)
     {
-        $message = GroupMessage::find($messageId);
-        if ($message && !in_array(auth()->user()->id, $message->read_by)) {
-            $readBy = json_decode($message->read_by, true);
-            $readBy[] = auth()->user()->id;
-            $message->update(['read_by' => json_encode($readBy)]);
+        $isMember = GroupMember::where('group_id', $groupId)
+            ->where('user_id', auth()->user()->id)
+            ->exists();
+
+        if (!$isMember) {
+            return response()->json(['message' => 'You are not a member of this group.'], 403);
         }
 
-        return response()->json(['message' => 'Message marked as read']);
+        $messages = GroupMessage::where('group_id', $groupId)->get();
+
+        $messages->each(function ($message) {
+            $readBy = json_decode($message->read_by, true) ?: [];
+            if (!in_array(auth()->user()->id, $readBy)) {
+                $readBy[] = auth()->user()->id;
+                $message->update([
+                    'read_by' => json_encode($readBy),
+                    'read_count' => count($readBy),
+                ]);
+            }
+        });
+
+        return response()->json($messages);
     }
 }

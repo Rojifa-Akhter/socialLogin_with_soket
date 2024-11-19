@@ -18,12 +18,12 @@ Route::group(['prefix' => 'auth'], function () {
 Route::middleware('auth:api')->group(function () {
     Route::post('/sendMessage', [MessageController::class, 'sendMessage']);
     Route::get('/getMessages', [MessageController::class, 'getMessages']);
-    Route::post('/markAsRead/{messageId}', [MessageController::class, 'markAsRead']);
+
     
     // Group Messaging Routes
     Route::post('/createGroup', [MessageController::class, 'createGroup']);
     Route::post('/joinGroup/{groupId}', [MessageController::class, 'joinGroup']);
     Route::post('/leaveGroup/{groupId}', [MessageController::class, 'leaveGroup']);
     Route::post('/sendGroupMessage/{groupId}', [MessageController::class, 'sendGroupMessage']);
-    Route::post('/markGroupMessageAsRead/{messageId}', [MessageController::class, 'markGroupMessageAsRead']);
+    Route::post('/getGroupMessages/{groupId}', [MessageController::class, 'getGroupMessages']);
 });

@@ -12,7 +12,7 @@ const io = new Server(server, {
 
 const users = {};  
 const groups = {}; 
-const message = {};
+
 
 io.on('connection', (socket) => {
     console.log(`User connected: ${socket.id}`);
@@ -50,10 +50,9 @@ io.on('connection', (socket) => {
         if (!groups[groupId]) {
             groups[groupId] = [];
         }
-        groups[groupId].push(userId);  // Store user in the group
+        groups[groupId].push(userId);
         console.log(`User ${userId} joined group ${groupId}`);
         
-        // Notify other group members about the new join
         io.to(groupId).emit('join_group', `${userId} has joined the group.`);
     });
 
@@ -65,7 +64,6 @@ io.on('connection', (socket) => {
         }
         console.log(`User ${userId} left group ${groupId}`);
         
-        // Notify other group members about the leave
         io.to(groupId).emit('leave_group', `${userId} has left the group.`);
     });
 

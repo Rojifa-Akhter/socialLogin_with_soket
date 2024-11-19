@@ -6,16 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class GroupMessage extends Model
 {
-    protected $guarded=['id'];
+    protected $guarded = ['id'];
+    public function getReadByCountAttribute()
+    {
+        return count($this->read_by);  
+    }
 
-    protected $casts = [
-        'read_by' => 'array',
-    ];
-
-    public function group(){
+    // Relationship with Group
+    public function group()
+    {
         return $this->belongsTo(Group::class);
     }
-    public function sender(){
-        return $this->belongsTo(User::class,'sender_id');
+
+    // Relationship with Sender
+    public function sender()
+    {
+        return $this->belongsTo(User::class, 'sender_id');
     }
 }
