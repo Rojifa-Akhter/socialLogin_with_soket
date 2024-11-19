@@ -16,16 +16,30 @@ class MessageController extends Controller
         $request->validate([
             'receiver_id' => 'required|exists:users,id',
             'message' => 'required|string|max:1000',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
 
+        // Handle image upload 
+        $imagePaths = [];
+        if ($request->has('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('img', 'public');
+                $imagePaths[] = asset('storage/' . $path);
+            }
+        }
+
+        // Create the message
         $message = Message::create([
             'sender_id' => auth()->user()->id,
             'receiver_id' => $request->receiver_id,
             'message' => $request->message,
-
+            'images' => json_encode($imagePaths), 
         ]);
+
         return response()->json($message);
     }
+
     public function getMessages(Request $request)
     {
         // Fetch messages where the logged-in user is either the sender or the receiver
@@ -41,6 +55,10 @@ class MessageController extends Controller
             if ($message->receiver_id == auth()->user()->id && !$message->is_read) {
                 $message->update(['is_read' => true]);
             }
+        });
+        // Decode the image URLs (if any)
+        $messages->each(function ($message) {
+            $message->images = json_decode($message->images);
         });
 
         return response()->json($messages);
