@@ -21,7 +21,6 @@ return new class extends Migration
             $table->string('google_id')->nullable();
             $table->string('facebook_id')->nullable();
             $table->boolean('verify_email')->default(false);
-            $table->enum('status', ['active', 'inactive', 'suspended'])->default('active');
             $table->string('remember_token', 100)->nullable();
             $table->timestamps();
             $table->softDeletes();

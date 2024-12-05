@@ -16,8 +16,8 @@ class MessageController extends Controller
         $request->validate([
             'receiver_id' => 'required|exists:users,id',
             'message' => 'required|string|max:1000',
-            'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+            'images' => 'nullable|array|max:5',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp,svg|max:10240'
         ]);
 
         // Handle image upload 
@@ -46,7 +46,7 @@ class MessageController extends Controller
             'receiver' => $receiver
         ]);
     }
-    
+
     public function getMessages(Request $request)
     {
         // Eager load the sender and receiver relationships
