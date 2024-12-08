@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('facebook_id')->nullable();
             $table->boolean('verify_email')->default(false);
             $table->string('remember_token', 100)->nullable();
+            $table->foreignId('plan_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
