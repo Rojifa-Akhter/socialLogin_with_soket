@@ -122,7 +122,7 @@ class PaymentController extends Controller
     // Cancel route after payment
     public function cancel()
     {
-        return redirect()->away('http://localhost:3000/payment/cancellation');
+        return response()->json(['message'=>'Cancel Payment']);
     }
 
     // one way payment
