@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PlanController;
+use App\Http\Controllers\PushNotificationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -39,3 +40,7 @@ Route::middleware('auth:api')->group(function () {
 
 Route::get('/checkout/success', [PaymentController::class, 'success'])->name('checkout.success');
 Route::get('/checkout/cancel', [PaymentController::class, 'cancel'])->name('checkout.cancel');
+
+Route::post('save-push-notification-sub', [PushNotificationController::class, 'saveSubscription']);
+Route::post('send-push-notification', [PushNotificationController::class, 'sendNotification']);
+Route::view('pushNotification', 'notificationPush.index');
